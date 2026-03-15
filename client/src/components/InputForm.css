@@ -1,0 +1,97 @@
+/* InputForm Styles */
+
+.input-form-container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.input-form-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.input-form-header h1 {
+  font-size: 2.5rem;
+  color: #1a1a2e;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.input-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.input-label {
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+
+.goals-textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background: #fafafa;
+  color: #333;
+}
+
+.goals-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  background: #fff;
+}
+
+.goals-textarea::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+.goals-textarea:disabled {
+  background: #f0f0f0;
+  cursor: not-allowed;
+}
+
+.analyse-button {
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.analyse-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+}
+
+.analyse-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.analyse-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
