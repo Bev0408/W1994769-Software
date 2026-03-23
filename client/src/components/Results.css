@@ -77,6 +77,12 @@
     font-size: 1rem;
 }
 
+/* Doughnut Chart (FR8) */
+.piechart-wrapper {
+    max-width: 280px;
+    margin: 0 auto 1.5rem auto;
+}
+
 /* Allocation Grid */
 .allocation-grid h3 {
     font-size: 1.1rem;

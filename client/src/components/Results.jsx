@@ -1,8 +1,9 @@
 /**
- * Results Component (FR6, FR9)
- * Displays risk profile and portfolio allocation
+ * Results Component (FR6, FR8, FR9)
+ * Displays risk profile, doughnut chart, and portfolio allocation
  */
 
+import PieChart from './PieChart';
 import './Results.css';
 
 function Results({ result, onReset }) {
@@ -50,6 +51,12 @@ function Results({ result, onReset }) {
             {portfolio && (
                 <div className="portfolio-section">
                     <p className="portfolio-description">{portfolio.description}</p>
+
+                    {/* Doughnut Chart (FR8) */}
+                    <PieChart
+                        asset_allocation={portfolio.asset_allocation}
+                        profileColor={getProfileColor(risk_profile)}
+                    />
 
                     {/* Asset Allocation (FR9) */}
                     <div className="allocation-grid">
