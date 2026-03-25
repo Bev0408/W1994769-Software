@@ -9,7 +9,7 @@ import './Results.css';
 function Results({ result, onReset }) {
     if (!result) return null;
 
-    const { risk_profile, confidence, portfolio, warning, error } = result;
+    const { risk_profile, confidence, portfolio, warning, error, responseTime } = result;
 
     const getProfileEmoji = (profile) => {
         switch (profile) {
@@ -96,6 +96,11 @@ function Results({ result, onReset }) {
                 <div className="error-message">
                     ⚠️ {error}
                 </div>
+            )}
+
+            {/* Response Time (NFR1) */}
+            {responseTime && (
+                <p className="response-time">Analysis completed in {responseTime}s</p>
             )}
 
             {/* Reset Button */}

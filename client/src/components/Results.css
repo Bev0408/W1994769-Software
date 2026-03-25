@@ -171,6 +171,14 @@
     color: #fff;
 }
 
+/* NFR1 - Response time display */
+.response-time {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #aaa;
+    margin-bottom: 0.75rem;
+}
+
 /* NFR4 - Mobile responsiveness */
 @media (max-width: 480px) {
   .results-container {

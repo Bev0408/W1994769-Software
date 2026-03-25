@@ -20,9 +20,12 @@ function App() {
     setIsLoading(true);
     setError(null);
 
+    const startTime = Date.now();
+
     try {
       const analysisResult = await analyzeText(text);
-      setResult(analysisResult);
+      const responseTime = ((Date.now() - startTime) / 1000).toFixed(2);
+      setResult({ ...analysisResult, responseTime });
     } catch (err) {
       setError(err.message || 'Failed to analyze. Please try again.');
     } finally {
