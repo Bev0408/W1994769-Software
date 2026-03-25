@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import InputForm from './components/InputForm';
 import Results from './components/Results';
+import Admin from './components/Admin';
 import { analyzeText } from './api/analyze';
 import './App.css';
 
@@ -13,6 +14,7 @@ function App() {
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const handleAnalyze = async (text) => {
     setIsLoading(true);
@@ -36,7 +38,9 @@ function App() {
   return (
     <div className="app">
       <main className="main-content">
-        {!result ? (
+        {isAdmin ? (
+          <Admin onClose={() => setIsAdmin(false)} />
+        ) : !result ? (
           <>
             <InputForm onSubmit={handleAnalyze} isLoading={isLoading} />
             {error && (
@@ -55,6 +59,11 @@ function App() {
           ⚠️ This is a proof-of-concept tool for educational purposes only.
           Not financial advice.
         </p>
+        {!isAdmin && (
+          <button className="admin-link" onClick={() => setIsAdmin(true)}>
+            Admin
+          </button>
+        )}
       </footer>
     </div>
   );

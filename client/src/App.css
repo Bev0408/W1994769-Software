@@ -50,6 +50,21 @@ body {
   font-size: 0.85rem;
 }
 
+.admin-link {
+  margin-top: 0.5rem;
+  background: none;
+  border: none;
+  color: #bbb;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0;
+}
+
+.admin-link:hover {
+  color: #667eea;
+  text-decoration: underline;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .main-content {
