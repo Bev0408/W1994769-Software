@@ -96,6 +96,26 @@
   transform: none;
 }
 
+/* NFR4 - Mobile responsiveness */
+@media (max-width: 480px) {
+  .input-form-container {
+    padding: 1rem;
+  }
+
+  .input-form-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .subtitle {
+    font-size: 0.95rem;
+  }
+
+  .analyse-button {
+    font-size: 1rem;
+    padding: 0.85rem 1.5rem;
+  }
+}
+
 /* FR3 - Loading spinner */
 .spinner {
   display: inline-block;

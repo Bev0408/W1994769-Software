@@ -170,3 +170,26 @@
     background: #667eea;
     color: #fff;
 }
+
+/* NFR4 - Mobile responsiveness */
+@media (max-width: 480px) {
+  .results-container {
+    padding: 1rem;
+  }
+
+  .profile-name {
+    font-size: 1.5rem;
+  }
+
+  .profile-badge {
+    padding: 1.2rem;
+  }
+
+  .piechart-wrapper {
+    max-width: 220px;
+  }
+
+  .results-header h2 {
+    font-size: 1.4rem;
+  }
+}
