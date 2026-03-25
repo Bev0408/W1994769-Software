@@ -40,6 +40,10 @@ function App() {
 
   return (
     <div className="app">
+      <header className="app-header">
+        <span className="app-logo">Risk Profile Advisor</span>
+      </header>
+
       <main className="main-content">
         {isAdmin ? (
           <Admin onClose={() => setIsAdmin(false)} />
