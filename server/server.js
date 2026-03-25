@@ -25,7 +25,7 @@ app.use(express.json());
 // CORS - Allow React frontend (Vite default port)
 app.use(cors({
     origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
-    methods: ['GET', 'POST'],
+    methods: ['GET', 'POST', 'PUT'],
     allowedHeaders: ['Content-Type']
 }));
 
@@ -173,6 +173,31 @@ app.get('/api/portfolios', async (req, res) => {
         res.json(portfolios);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch portfolios' });
+    }
+});
+
+/**
+ * PUT /api/portfolios/:risk_profile
+ * Update asset allocation for a given portfolio (FR13)
+ */
+app.put('/api/portfolios/:risk_profile', async (req, res) => {
+    try {
+        const { risk_profile } = req.params;
+        const { asset_allocation, description } = req.body;
+
+        const portfolio = await Portfolio.findOneAndUpdate(
+            { risk_profile },
+            { asset_allocation, description, last_updated: new Date() },
+            { new: true, runValidators: true }
+        );
+
+        if (!portfolio) {
+            return res.status(404).json({ error: 'Portfolio not found' });
+        }
+
+        res.json(portfolio);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update portfolio' });
     }
 });
 
