@@ -45,6 +45,7 @@ function InputForm({ onSubmit, isLoading }) {
                     className="analyse-button"
                     disabled={!text.trim() || isLoading}
                 >
+                    {isLoading && <span className="spinner" />}
                     {isLoading ? 'Analysing...' : 'Analyse My Profile'}
                 </button>
             </form>
