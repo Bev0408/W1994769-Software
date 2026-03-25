@@ -31,29 +31,3 @@ export async function analyzeText(text) {
     }
 }
 
-/**
- * Get all portfolios (for admin/debugging)
- * @returns {Promise<Array>} List of portfolio definitions
- */
-export async function getPortfolios() {
-    try {
-        const response = await api.get('/portfolios');
-        return response.data;
-    } catch (error) {
-        console.error('API Error:', error);
-        throw new Error('Failed to fetch portfolios');
-    }
-}
-
-/**
- * Health check
- * @returns {Promise<Object>} Server health status
- */
-export async function healthCheck() {
-    try {
-        const response = await api.get('/health');
-        return response.data;
-    } catch (error) {
-        throw new Error('Server not available');
-    }
-}

@@ -202,6 +202,37 @@ app.put('/api/portfolios/:risk_profile', async (req, res) => {
 });
 
 /**
+ * GET /api/evaluation
+ * Runs evaluate.py and returns F1 score + confusion matrix (for admin)
+ */
+app.get('/api/evaluation', (req, res) => {
+    const scriptPath = path.join(__dirname, '..', 'ml_service', 'scripts', 'evaluate.py');
+    const pythonProcess = spawn(pythonCmd, [scriptPath]);
+
+    let stdout = '';
+    let stderr = '';
+
+    pythonProcess.stdout.on('data', (data) => { stdout += data.toString(); });
+    pythonProcess.stderr.on('data', (data) => { stderr += data.toString(); });
+
+    pythonProcess.on('close', (code) => {
+        if (code !== 0) {
+            return res.status(500).json({ error: 'Evaluation script failed' });
+        }
+        try {
+            res.json(JSON.parse(stdout.trim()));
+        } catch {
+            res.status(500).json({ error: 'Failed to parse evaluation result' });
+        }
+    });
+
+    pythonProcess.on('error', (err) => {
+        console.error('Failed to start evaluation process:', err);
+        res.status(500).json({ error: 'Failed to start evaluation process' });
+    });
+});
+
+/**
  * Health check endpoint
  */
 app.get('/api/health', (req, res) => {

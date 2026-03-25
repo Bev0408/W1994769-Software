@@ -13,6 +13,8 @@ function Admin({ onClose }) {
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(null);
     const [message, setMessage] = useState(null);
+    const [evaluation, setEvaluation] = useState(null);
+    const [evalLoading, setEvalLoading] = useState(true);
 
     useEffect(() => {
         fetch(`${API_BASE}/api/portfolios`)
@@ -25,6 +27,14 @@ function Admin({ onClose }) {
                 setMessage({ type: 'error', text: 'Failed to load portfolios.' });
                 setLoading(false);
             });
+
+        fetch(`${API_BASE}/api/evaluation`)
+            .then(res => res.json())
+            .then(data => {
+                setEvaluation(data);
+                setEvalLoading(false);
+            })
+            .catch(() => setEvalLoading(false));
     }, []);
 
     const handleChange = (index, field, value) => {
@@ -39,7 +49,17 @@ function Admin({ onClose }) {
         setPortfolios(updated);
     };
 
+    const getTotal = (allocation) => {
+        return Object.values(allocation).reduce((sum, val) => sum + val, 0);
+    };
+
     const handleSave = async (portfolio, index) => {
+        const total = getTotal(portfolio.asset_allocation);
+        if (total !== 100) {
+            setMessage({ type: 'error', text: `Allocations must total 100%. Currently: ${total}%` });
+            return;
+        }
+
         setSaving(index);
         setMessage(null);
 
@@ -74,6 +94,62 @@ function Admin({ onClose }) {
                     {message.text}
                 </div>
             )}
+
+            {/* Model Evaluation Section */}
+            <div className="eval-section">
+                <h3 className="eval-title">Model Evaluation</h3>
+
+                {evalLoading ? (
+                    <p className="admin-loading">Running evaluation...</p>
+                ) : evaluation ? (
+                    <>
+                        <div className="eval-score-row">
+                            <div className="eval-score-box">
+                                <span className="eval-score-label">Weighted F1 Score</span>
+                                <span className="eval-score-value">{evaluation.f1_percent}%</span>
+                                <span className={`eval-badge ${evaluation.target_met ? 'eval-badge--pass' : 'eval-badge--fail'}`}>
+                                    {evaluation.target_met ? 'Target Met (≥70%)' : 'Below Target (70%)'}
+                                </span>
+                            </div>
+                            <div className="eval-score-box">
+                                <span className="eval-score-label">Test Samples</span>
+                                <span className="eval-score-value">{evaluation.test_size}</span>
+                                <span className="eval-badge eval-badge--info">20% held-out set</span>
+                            </div>
+                        </div>
+
+                        <h4 className="eval-cm-title">Confusion Matrix</h4>
+                        <p className="eval-cm-desc">Rows = Actual label &nbsp;|&nbsp; Columns = Predicted label</p>
+                        <div className="eval-cm-wrapper">
+                            <table className="eval-cm-table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        {evaluation.labels.map(l => <th key={l}>{l}</th>)}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {evaluation.confusion_matrix.map((row, i) => (
+                                        <tr key={i}>
+                                            <td className="eval-cm-label">{evaluation.labels[i]}</td>
+                                            {row.map((val, j) => (
+                                                <td
+                                                    key={j}
+                                                    className={`eval-cm-cell ${i === j ? 'eval-cm-cell--correct' : val > 0 ? 'eval-cm-cell--wrong' : ''}`}
+                                                >
+                                                    {val}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </>
+                ) : (
+                    <p className="admin-loading">Evaluation unavailable.</p>
+                )}
+            </div>
 
             {loading ? (
                 <p className="admin-loading">Loading portfolios...</p>

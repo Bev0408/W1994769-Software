@@ -145,6 +145,136 @@
     cursor: not-allowed;
 }
 
+/* Evaluation Section */
+.eval-section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.07);
+    margin-bottom: 2rem;
+}
+
+.eval-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #1a1a2e;
+    margin-bottom: 1.2rem;
+}
+
+.eval-score-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.eval-score-box {
+    flex: 1;
+    min-width: 160px;
+    background: #f8f9ff;
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.eval-score-label {
+    font-size: 0.8rem;
+    color: #888;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.eval-score-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1a1a2e;
+}
+
+.eval-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+    width: fit-content;
+}
+
+.eval-badge--pass {
+    background: #d4edda;
+    color: #155724;
+}
+
+.eval-badge--fail {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.eval-badge--info {
+    background: #e8eaf6;
+    color: #3949ab;
+}
+
+.eval-cm-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.3rem;
+}
+
+.eval-cm-desc {
+    font-size: 0.8rem;
+    color: #999;
+    margin-bottom: 0.8rem;
+}
+
+.eval-cm-wrapper {
+    overflow-x: auto;
+}
+
+.eval-cm-table {
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    width: 100%;
+}
+
+.eval-cm-table th {
+    padding: 0.5rem 1rem;
+    text-align: center;
+    color: #555;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.eval-cm-label {
+    padding: 0.5rem 1rem;
+    font-weight: 600;
+    color: #555;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.eval-cm-cell {
+    padding: 0.6rem 1.2rem;
+    text-align: center;
+    border-radius: 6px;
+    font-weight: 600;
+    color: #aaa;
+    background: #f5f5f5;
+}
+
+.eval-cm-cell--correct {
+    background: #d4edda;
+    color: #155724;
+}
+
+.eval-cm-cell--wrong {
+    background: #f8d7da;
+    color: #721c24;
+}
+
 @media (max-width: 480px) {
     .admin-container {
         padding: 1rem;
