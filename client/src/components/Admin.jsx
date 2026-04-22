@@ -31,9 +31,10 @@ function Admin({ onClose }) {
             });
 
         fetch(`${API_BASE}/api/evaluation`)
-            .then(res => res.json())
+            .then(res => res.ok ? res.json() : null)
             .then(data => {
-                setEvaluation(data);
+                // Only set evaluation if it has the expected shape
+                if (data && data.confusion_matrix) setEvaluation(data);
                 setEvalLoading(false);
             })
             .catch(() => setEvalLoading(false));
