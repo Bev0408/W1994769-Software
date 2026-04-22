@@ -22,9 +22,13 @@ const pythonCmd = process.platform === 'win32' ? 'python' : 'python3';
 // Middleware
 app.use(express.json());
 
-// CORS - Allow React frontend (Vite default port)
+// CORS - Allow React frontend (dev: Vite port, prod: same origin)
+const allowedOrigins = process.env.NODE_ENV === 'production'
+    ? true  // Client served from same server in production — allow all
+    : ['http://localhost:5173', 'http://127.0.0.1:5173'];
+
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173'],
+    origin: allowedOrigins,
     methods: ['GET', 'POST', 'PUT'],
     allowedHeaders: ['Content-Type']
 }));
