@@ -1,7 +1,7 @@
 /**
  * Robo-Advisor Backend Server
  * Node.js + Express REST API
- * Handles text analysis by spawning Python ML process
+ * Handles text analysis via a persistent Python ML worker process
  */
 
 require('dotenv').config();
@@ -10,6 +10,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const { spawn } = require('child_process');
 const path = require('path');
+const fs = require('fs');
 
 const Portfolio = require('./models/Portfolio');
 
@@ -53,60 +54,66 @@ function sanitizeInput(text) {
     return clean.trim();
 }
 
-/**
- * Run Python prediction script
- * Returns Promise with classification result
- */
-function runPrediction(text) {
-    return new Promise((resolve, reject) => {
-        const scriptPath = path.join(__dirname, '..', 'ml_service', 'scripts', 'predict.py');
+// ========================
+// Persistent Python Worker
+// ========================
+// One Python process is started when the server starts.
+// All classification requests are sent via stdin and results read from stdout.
+// This avoids the 5-10 second Python startup cost on every request.
 
-        const pythonProcess = spawn(pythonCmd, [scriptPath, text]);
+let pyWorker = null;
+const resolverQueue = []; // FIFO queue of pending resolve functions
+let lineBuffer = '';
 
-        let stdout = '';
-        let stderr = '';
+function startPythonWorker() {
+    const scriptPath = path.join(__dirname, '..', 'ml_service', 'scripts', 'predict.py');
+    pyWorker = spawn(pythonCmd, [scriptPath, '--stdin']);
+    lineBuffer = '';
 
-        pythonProcess.stdout.on('data', (data) => {
-            stdout += data.toString();
-        });
+    pyWorker.stdout.on('data', (data) => {
+        lineBuffer += data.toString();
+        const lines = lineBuffer.split('\n');
+        lineBuffer = lines.pop(); // keep any incomplete trailing line
 
-        pythonProcess.stderr.on('data', (data) => {
-            stderr += data.toString();
-        });
-
-        pythonProcess.on('close', (code) => {
-            if (code !== 0) {
-                console.error('Python stderr:', stderr);
-                // Fallback classification (NFR3)
-                resolve({
-                    risk_profile: 'Balanced',
-                    confidence: 0.33,
-                    error: 'Classification process failed'
-                });
-            } else {
-                try {
-                    const result = JSON.parse(stdout.trim());
-                    resolve(result);
-                } catch (e) {
-                    // Fallback if JSON parsing fails (NFR3)
-                    resolve({
-                        risk_profile: 'Balanced',
-                        confidence: 0.33,
-                        error: 'Failed to parse classification result'
-                    });
+        for (const line of lines) {
+            if (!line.trim()) continue;
+            try {
+                const parsed = JSON.parse(line.trim());
+                // Skip the startup ready signal — not a prediction result
+                if (parsed.ready) continue;
+                if (resolverQueue.length > 0) {
+                    resolverQueue.shift()(parsed);
                 }
-            }
-        });
+            } catch (_) { /* malformed line, skip */ }
+        }
+    });
 
-        pythonProcess.on('error', (err) => {
-            console.error('Failed to start Python process:', err);
-            // Fallback (NFR3)
-            resolve({
-                risk_profile: 'Balanced',
-                confidence: 0.33,
-                error: 'Failed to start classification process'
-            });
-        });
+    pyWorker.stderr.on('data', (data) => {
+        console.error('Python worker stderr:', data.toString());
+    });
+
+    pyWorker.on('close', () => {
+        console.log('Python worker closed, will restart on next request');
+        pyWorker = null;
+        lineBuffer = '';
+        // Resolve any pending requests with NFR3 fallback
+        while (resolverQueue.length) {
+            resolverQueue.shift()({ risk_profile: 'Balanced', confidence: 0.33, error: 'Worker restarting' });
+        }
+    });
+
+    pyWorker.on('error', (err) => {
+        console.error('Failed to start Python worker:', err);
+        pyWorker = null;
+    });
+}
+
+function runPrediction(text) {
+    return new Promise((resolve) => {
+        // Restart worker if it has died
+        if (!pyWorker) startPythonWorker();
+        resolverQueue.push(resolve);
+        pyWorker.stdin.write(text + '\n');
     });
 }
 
@@ -138,7 +145,7 @@ app.post('/api/analyze', async (req, res) => {
             });
         }
 
-        // Get classification from Python
+        // Get classification from persistent Python worker
         const classification = await runPrediction(sanitizedText);
 
         // Fetch portfolio from database
@@ -169,7 +176,7 @@ app.post('/api/analyze', async (req, res) => {
 
 /**
  * GET /api/portfolios
- * Returns all model portfolios (for admin/debugging)
+ * Returns all model portfolios
  */
 app.get('/api/portfolios', async (req, res) => {
     try {
@@ -207,33 +214,18 @@ app.put('/api/portfolios/:risk_profile', async (req, res) => {
 
 /**
  * GET /api/evaluation
- * Runs evaluate.py and returns F1 score + confusion matrix (for admin)
+ * Serves pre-computed F1 score + confusion matrix from build-time cache.
+ * evaluate.py is run during the build step (render.yaml) and the result
+ * saved to ml_service/models/evaluation_cache.json — no Python spawn needed.
  */
 app.get('/api/evaluation', (req, res) => {
-    const scriptPath = path.join(__dirname, '..', 'ml_service', 'scripts', 'evaluate.py');
-    const pythonProcess = spawn(pythonCmd, [scriptPath]);
-
-    let stdout = '';
-    let stderr = '';
-
-    pythonProcess.stdout.on('data', (data) => { stdout += data.toString(); });
-    pythonProcess.stderr.on('data', (data) => { stderr += data.toString(); });
-
-    pythonProcess.on('close', (code) => {
-        if (code !== 0) {
-            return res.status(500).json({ error: 'Evaluation script failed' });
-        }
-        try {
-            res.json(JSON.parse(stdout.trim()));
-        } catch {
-            res.status(500).json({ error: 'Failed to parse evaluation result' });
-        }
-    });
-
-    pythonProcess.on('error', (err) => {
-        console.error('Failed to start evaluation process:', err);
-        res.status(500).json({ error: 'Failed to start evaluation process' });
-    });
+    const cachePath = path.join(__dirname, '..', 'ml_service', 'models', 'evaluation_cache.json');
+    try {
+        const data = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+        res.json(data);
+    } catch (_) {
+        res.status(500).json({ error: 'Evaluation results not available' });
+    }
 });
 
 /**
@@ -247,10 +239,8 @@ app.get('/api/health', (req, res) => {
 // Serve React Frontend (Production)
 // ========================
 
-// Serve static files from React build
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
-// Catch-all route - serve React app for any non-API routes
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
@@ -261,17 +251,20 @@ app.get('*', (req, res) => {
 
 async function startServer() {
     try {
-        // Connect to MongoDB
         const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/robo-advisor';
 
         console.log('Connecting to MongoDB...');
         await mongoose.connect(mongoUri);
         console.log('✓ Connected to MongoDB');
 
-        // Start Express server
         app.listen(PORT, () => {
             console.log(`✓ Server running on http://localhost:${PORT}`);
             console.log(`✓ CORS enabled for http://localhost:5173`);
+
+            // Start the Python worker after server is listening
+            console.log('Starting Python ML worker...');
+            startPythonWorker();
+            console.log('✓ Python ML worker started');
         });
 
     } catch (error) {

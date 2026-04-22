@@ -8,7 +8,8 @@ services:
       npm install --prefix client &&
       npm run build --prefix client &&
       pip3 install -r ml_service/requirements.txt &&
-      python3 -c "import nltk; nltk.download('punkt', download_dir='ml_service/nltk_data'); nltk.download('punkt_tab', download_dir='ml_service/nltk_data'); nltk.download('stopwords', download_dir='ml_service/nltk_data'); nltk.download('wordnet', download_dir='ml_service/nltk_data')"
+      python3 -c "import nltk, os; [nltk.download(p, download_dir='ml_service/nltk_data', quiet=True) for p in ['punkt','punkt_tab','stopwords','wordnet']]" &&
+      python3 ml_service/scripts/evaluate.py > ml_service/models/evaluation_cache.json
     startCommand: node server/server.js
     envVars:
       - key: NODE_ENV
