@@ -14,7 +14,14 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
-# Suppress NLTK download messages
+# Point NLTK to the pre-downloaded data directory (baked in at build time)
+# Falls back to default NLTK path if not found (e.g. local dev)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+nltk_data_dir = os.path.join(script_dir, '..', 'nltk_data')
+if os.path.exists(nltk_data_dir):
+    nltk.data.path.insert(0, nltk_data_dir)
+
+# Download only if not already present
 nltk.download('punkt', quiet=True)
 nltk.download('punkt_tab', quiet=True)
 nltk.download('stopwords', quiet=True)

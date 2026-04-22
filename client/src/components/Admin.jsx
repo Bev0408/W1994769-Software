@@ -6,7 +6,9 @@
 import { useState, useEffect } from 'react';
 import './Admin.css';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+// In production the client is served from the same server, so use relative URLs.
+// In local dev, fall back to the Vite proxy or localhost.
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 function Admin({ onClose }) {
     const [portfolios, setPortfolios] = useState([]);
