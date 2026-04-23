@@ -1,0 +1,1 @@
+{"f1_score": 1.0, "f1_percent": 100.0, "target_met": true, "test_size": 100, "labels": ["Conservative", "Balanced", "Aggressive"], "confusion_matrix": [[33, 0, 0], [0, 34, 0], [0, 0, 33]]}
